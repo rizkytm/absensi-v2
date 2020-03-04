@@ -14,6 +14,8 @@ class Absen extends REST_Controller {
 
     public function index_post() {
 
+        date_default_timezone_set('Asia/Jakarta');
+
         $jsonArray = json_decode(file_get_contents('php://input'), true);
         $no_konfirmasi = $jsonArray['no_konfirmasi'];
 
@@ -29,6 +31,22 @@ class Absen extends REST_Controller {
                 $this->db->where('no_konfirmasi', $no_konfirmasi);
                 $update = $this->db->update('peserta_workshop');
                 if($update) {
+
+                    require_once(APPPATH.'views/vendor/autoload.php');
+                    $options = array(
+                        'cluster' => 'ap1',
+                        'useTLS' => true
+                    );
+                    $pusher = new Pusher\Pusher(
+                        '93608c8bbd40b7be3d87', //ganti dengan App_key pusher Anda
+                        '9774f0a7bb884401ee7c', //ganti dengan App_secret pusher Anda
+                        '957529', //ganti dengan App_key pusher Anda
+                        $options
+                    );
+            
+                    $data['message'] = 'success';
+                    $pusher->trigger('my-channel', 'my-event', $data);
+
                     $response = array(
                         "program" => $peserta->program,
                         "nama" => $peserta->nama,
