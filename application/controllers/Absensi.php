@@ -6,6 +6,17 @@ class Absensi extends CI_Controller{
         parent::__construct();
         $this->load->model('Product_model','product_model');
     }
+
+    public function _remap($method, $param = array()) {
+        if(method_exists($this, $method)) {
+            $role = $this->session->userdata('role_id');
+            if(!empty($role)) {
+                return call_user_func_array(array($this, $method), $param);
+            } else {
+                redirect(base_url('auth'));
+            }
+        }
+    }
  
     function index(){
         $data['peserta'] = $this->db->get('peserta_workshop')->result();

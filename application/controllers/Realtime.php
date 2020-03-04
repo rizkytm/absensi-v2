@@ -6,6 +6,17 @@ class Realtime extends CI_Controller{
         parent::__construct();
         $this->load->model('Product_model','product_model');
     }
+
+    public function _remap($method, $param = array()) {
+        if(method_exists($this, $method)) {
+            $role = $this->session->userdata('role_id');
+            if(!empty($role)) {
+                return call_user_func_array(array($this, $method), $param);
+            } else {
+                redirect(base_url('auth'));
+            }
+        }
+    }
  
     function index(){
         $data['peserta'] = $this->db->get('peserta_workshop')->result();
@@ -19,6 +30,19 @@ class Realtime extends CI_Controller{
         $this->db->order_by('presence_time', 'DESC');
         $data = $this->db->get('peserta_workshop')->result();
         echo json_encode($data);
+    }
+
+    function count_peserta() {
+        $this->db->where('status', 'Hadir');
+        $this->db->order_by('presence_time', 'DESC');
+        $data = $this->db->get('peserta_workshop')->result();
+        echo count($data);
+    }
+
+    function count_all_peserta() {
+        $this->db->order_by('presence_time', 'DESC');
+        $data = $this->db->get('peserta_workshop')->result();
+        echo count($data);
     }
 
     function get_latest_peserta(){

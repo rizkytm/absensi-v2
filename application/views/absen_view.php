@@ -16,12 +16,13 @@
                 <a class="p-2 text-dark" href="<?= base_url('realtime') ?>">Realtime</a>
                 <a class="p-2 text-dark" href="<?= base_url('absensi') ?>">List</a>
             </nav>
-            <!-- <a class="btn btn-outline-primary" href="#">Login</a> -->
+            <a class="btn btn-outline-primary" href="<?= base_url('auth/logout'); ?>">Logout</a>
         </div>
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-            <h2 class="text-center">List All Absen <?= count($hadir); echo '/'; echo count($peserta); ?></h2>
+            <h2 class="text-center">List All Absen</h2>
+            <h3 class="text-center" id="counter"></h3>
             <!-- <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#ModalAdd">Add New Product</button> -->
                 <table id="mytable" class="table table-striped">
                     <thead>
@@ -143,7 +144,8 @@
         $(document).ready(function(){
             $('#mytable').DataTable();
             // CALL FUNCTION SHOW PRODUCT
-            // show_product();
+            show_product();
+            count_product();
  
             // Enable pusher logging - don't include this in production
             Pusher.logToConsole = true;
@@ -157,8 +159,35 @@
             channel.bind('my-event', function(data) {
                 if(data.message === 'success'){
                     show_product();
+                    count_product();
                 }
             });
+
+            function count_product(){
+                $.ajax({
+                    url   : '<?php echo site_url("realtime/count_peserta");?>',
+                    type  : 'GET',
+                    async : true,
+                    dataType : 'json',
+                    success : function(data){
+
+                        $.ajax({
+                            url   : '<?php echo site_url("realtime/count_all_peserta");?>',
+                            type  : 'GET',
+                            async : true,
+                            dataType : 'json',
+                            success : function(result){
+
+                                $('#counter').html(data + '/' + result);
+                                
+                            }
+        
+                        });
+
+                    }
+ 
+                });
+            } 
  
             // FUNCTION SHOW PRODUCT
             function show_product(){
@@ -168,22 +197,52 @@
                     async : true,
                     dataType : 'json',
                     success : function(data){
+                        $('#mytable').DataTable().destroy();
+                        $('#mytable').find('tbody').empty();
                         var html = '';
                         var count = 1;
                         var i;
-                        for(i=0; i<data.length; i++){
-                            html += '<tr>'+
-                                    '<td>'+ count++ +'</td>'+
-                                    '<td>'+ data[i].nama +'</td>'+
-                                    '<td>'+ data[i].no_konfirmasi +'</td>'+
-                                    '<td>'+ data[i].presence_time +'</td>'+
-                                    // '<td>'+
+                        // for(i=0; i<data.length; i++){
+                        // $.each(data, function(index, element) {
+                        //      $('#mytable').find('tbody').append('<tr>\ 
+                        //             <td>' + count + '</td>\
+                        //             <td>'+ element.nama +'</td>\
+                        //             <td>'+ element.no_konfirmasi +'</td>\
+                        //             <td>'+ element.presence_time +'</td>\
+                                    
                                     //     '<a href="javascript:void(0);" class="btn btn-sm btn-info item_edit" data-id="'+ data[i].product_id +'" data-name="'+ data[i].product_name +'" data-price="'+ data[i].product_price +'">Edit</a>'+
                                     //     '<a href="javascript:void(0);" class="btn btn-sm btn-danger item_delete" data-id="'+ data[i].product_id +'">Delete</a>'+
                                     // '</td>'+
-                                    '</tr>';
-                        }
-                        $('.show_product').html(html);
+                                    // '</tr>';
+                            // $('#nama_item').value = "Test";
+                            // document.getElementById("nama_item").value = "Testing";
+                        // }
+                        // })
+
+
+                        $.each(data, function(index, element) {
+                            $('#mytable').find('tbody').append('<tr>\
+                            <td>' + count + '</td>\
+                            <td>' + element.nama + '</td>\
+                            <td>' + element.no_konfirmasi + '</td>\
+                            <td>' + element.grup + '</td>\
+                            <td>' + element.status + '</td>\
+                            <td>' + element.presence_time + '</td>\
+                            </tr>\
+                            ');
+
+                            count += 1;
+                            // $('#counter').html(data.length + '/' + );
+                        })
+
+                        $('#mytable').DataTable({
+                            'lengthMenu': [
+                                [10, 25, 50, -1],
+                                [10, 25, 50, "All"]
+                            ]
+                        });
+                        
+                        // $('.show_product').html(html);
                     }
  
                 });

@@ -15,12 +15,13 @@
                 <a class="p-2 text-dark" href="<?= base_url('realtime') ?>">Realtime</a>
                 <a class="p-2 text-dark" href="<?= base_url('absensi') ?>">List</a>
             </nav>
-            <!-- <a class="btn btn-outline-primary" href="#">Login</a> -->
+            <a class="btn btn-outline-primary" href="<?= base_url('auth/logout'); ?>">Logout</a>
         </div>
     <div class="container">
         <div class="row">
             <div class="col-md-8">
-            <h2 class="text-center">Real Time Absen <?= count($hadir); echo '/'; echo count($peserta); ?></h2>
+            <h2 class="text-center">Real Time Absen</h2>
+            <h3 class="text-center" id="counter"></h3>
             <!-- <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#ModalAdd">Add New Product</button> -->
                 <table id="mytable" class="table table-striped">
                     <thead>
@@ -147,6 +148,7 @@
             // CALL FUNCTION SHOW PRODUCT
             show_product();
             show_latest();
+            count_product();
  
             // Enable pusher logging - don't include this in production
             Pusher.logToConsole = true;
@@ -161,8 +163,39 @@
                 if(data.message === 'success'){
                     show_product();
                     show_latest();
+                    count_product();
                 }
             });
+
+            function count_product(){
+                $.ajax({
+                    url   : '<?php echo site_url("realtime/count_peserta");?>',
+                    type  : 'GET',
+                    async : true,
+                    dataType : 'json',
+                    success : function(data){
+
+                        $.ajax({
+                            url   : '<?php echo site_url("realtime/count_all_peserta");?>',
+                            type  : 'GET',
+                            async : true,
+                            dataType : 'json',
+                            success : function(result){
+
+                                
+
+                                $('#counter').html(data + '/' + result);
+                                
+                            }
+        
+                        });
+
+                        // $('#counter').html(data + '/' + data);
+                        
+                    }
+ 
+                });
+            } 
  
             // FUNCTION SHOW PRODUCT
             function show_product(){
@@ -194,6 +227,7 @@
                         // }
                         // })
 
+
                         $.each(data, function(index, element) {
                             $('#mytable').find('tbody').append('<tr>\
                             <td>' + count + '</td>\
@@ -205,6 +239,7 @@
                             ');
 
                             count += 1;
+                            // $('#counter').html(data.length + '/' + );
                         })
 
                         $('#mytable').DataTable({
@@ -254,6 +289,8 @@
                             $('#grup_item').html("Grup : " + element.grup);
                             $('#status_item').html("Status : " + element.status);
                             $('#presence_item').html("Presence Time : " + element.presence_time);
+                            
+        
                         })
                     }
  
